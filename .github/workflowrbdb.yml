@@ -1,0 +1,28 @@
+name: Deploy Free RDP Server
+
+on:
+  workflow_dispatch: # يمكنك تشغيله يدوياً
+  schedule:
+    - cron: '0 0 * * *' # إعادة التشغيل يومياً
+
+jobs:
+  deploy-rdp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Start Ubuntu RDP
+      uses: mxrch/ghactions@v1
+      with:
+        password: ${{ secrets.RDP_PASSWORD }} # يجب تعيينه في إعدادات الريبو
+        task: |
+          sudo apt update
+          sudo apt install -y xrdp xfce4 xfce4-goodies
+          echo xfce4-session > ~/.xsession
+          sudo systemctl enable xrdp
+          sudo systemctl restart xrdp
+          sudo ufw allow 3389
+          curl ifconfig.me # لعرض IP العام
+
+    - name: Get Public IP
+      run: echo "RDP Server IP: $(curl -s ifconfig.me)"
